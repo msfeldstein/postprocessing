@@ -1,7 +1,7 @@
 /**
- * postprocessing v0.0.4 build Dec 22 2015
+ * postprocessing v0.0.4 build Jan 04 2016
  * https://github.com/vanruesc/postprocessing
- * Copyright 2015 Raoul van Rüschen, Zlib
+ * Copyright 2016 Raoul van Rüschen, Zlib
  */
 
 (function (global, factory) {
@@ -12,7 +12,7 @@
 
 	THREE = 'default' in THREE ? THREE['default'] : THREE;
 
-	var shader = {
+	var shader$1 = {
 		fragment: "uniform sampler2D tDiffuse;\nuniform float opacity;\n\nvarying vec2 vUv;\n\nvoid main() {\n\n\tvec4 texel = texture2D(tDiffuse, vUv);\n\tgl_FragColor = opacity * texel;\n\n}\n",
 		vertex: "varying vec2 vUv;\n\nvoid main() {\n\n\tvUv = uv;\n\tgl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n\n}\n",
 	};
@@ -36,8 +36,8 @@
 
 			},
 
-			fragmentShader: shader.fragment,
-			vertexShader: shader.vertex,
+			fragmentShader: shader$1.fragment,
+			vertexShader: shader$1.vertex,
 
 		});
 
@@ -46,7 +46,7 @@
 	CopyMaterial.prototype = Object.create(THREE.ShaderMaterial.prototype);
 	CopyMaterial.prototype.constructor = CopyMaterial;
 
-	var shader$1 = {
+	var shader = {
 		fragment: "uniform sampler2D tDiffuse;\nvarying vec2 vUv;\n\nvoid main() {\n\n\tvec4 texel = texture2D(tDiffuse, vUv);\n\tvec3 luma = vec3(0.299, 0.587, 0.114);\n\tfloat v = dot(texel.rgb, luma);\n\n\tgl_FragColor = vec4(v, v, v, texel.a);\n\n}\n",
 		vertex: "varying vec2 vUv;\n\nvoid main() {\n\n\tvUv = uv;\n\tgl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n\n}\n",
 	};
@@ -70,8 +70,8 @@
 
 			},
 
-			fragmentShader: shader$1.fragment,
-			vertexShader: shader$1.vertex,
+			fragmentShader: shader.fragment,
+			vertexShader: shader.vertex,
 
 		});
 
@@ -80,7 +80,7 @@
 	LuminosityMaterial.prototype = Object.create(THREE.ShaderMaterial.prototype);
 	LuminosityMaterial.prototype.constructor = LuminosityMaterial;
 
-	var shader$3 = {
+	var shader$2 = {
 		fragment: "uniform sampler2D lastLum;\nuniform sampler2D currentLum;\nuniform float delta;\nuniform float tau;\n\nvarying vec2 vUv;\n\nvoid main() {\n\n\tvec4 lastLum = texture2D(lastLum, vUv, MIP_LEVEL_1X1);\n\tvec4 currentLum = texture2D(currentLum, vUv, MIP_LEVEL_1X1);\n\n\tfloat fLastLum = lastLum.r;\n\tfloat fCurrentLum = currentLum.r;\n\n\t// Better results with squared input luminance.\n\tfCurrentLum *= fCurrentLum;\n\n\t// Adapt the luminance using Pattanaik's technique.\n\tfloat fAdaptedLum = fLastLum + (fCurrentLum - fLastLum) * (1.0 - exp(-delta * tau));\n\t// fAdaptedLum = sqrt(fAdaptedLum);\n\n\tgl_FragColor = vec4(fAdaptedLum, fAdaptedLum, fAdaptedLum, 1.0);\n\n}\n",
 		vertex: "varying vec2 vUv;\n\nvoid main() {\n\n\tvUv = uv;\n\tgl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n\n}\n",
 	};
@@ -112,8 +112,8 @@
 
 			},
 
-			fragmentShader: shader$3.fragment,
-			vertexShader: shader$3.vertex,
+			fragmentShader: shader$2.fragment,
+			vertexShader: shader$2.vertex,
 
 		});
 
@@ -122,7 +122,7 @@
 	AdaptiveLuminosityMaterial.prototype = Object.create(THREE.ShaderMaterial.prototype);
 	AdaptiveLuminosityMaterial.prototype.constructor = AdaptiveLuminosityMaterial;
 
-	var shader$5 = {
+	var shader$3 = {
 		fragment: "uniform sampler2D tDiffuse;\nuniform float middleGrey;\nuniform float maxLuminance;\n\n#ifdef ADAPTED_LUMINANCE\n\n\tuniform sampler2D luminanceMap;\n\n#else\n\n\tuniform float averageLuminance;\n\n#endif\n\nvarying vec2 vUv;\n\nconst vec3 LUM_CONVERT = vec3(0.299, 0.587, 0.114);\n\nvec3 toneMap(vec3 vColor) {\n\n\t#ifdef ADAPTED_LUMINANCE\n\n\t\t// Get the calculated average luminance.\n\t\tfloat fLumAvg = texture2D(luminanceMap, vec2(0.5, 0.5)).r;\n\n\t#else\n\n\t\tfloat fLumAvg = averageLuminance;\n\n\t#endif\n\n\t// Calculate the luminance of the current pixel.\n\tfloat fLumPixel = dot(vColor, LUM_CONVERT);\n\n\t// Apply the modified operator (Eq. 4).\n\tfloat fLumScaled = (fLumPixel * middleGrey) / fLumAvg;\n\n\tfloat fLumCompressed = (fLumScaled * (1.0 + (fLumScaled / (maxLuminance * maxLuminance)))) / (1.0 + fLumScaled);\n\treturn fLumCompressed * vColor;\n\n}\n\nvoid main() {\n\n\tvec4 texel = texture2D(tDiffuse, vUv);\n\tgl_FragColor = vec4(toneMap(texel.rgb), texel.a);\n\n}\n",
 		vertex: "varying vec2 vUv;\n\nvoid main() {\n\n\tvUv = uv;\n\tgl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n\n}\n",
 	};
@@ -150,8 +150,8 @@
 
 			},
 
-			fragmentShader: shader$5.fragment,
-			vertexShader: shader$5.vertex,
+			fragmentShader: shader$3.fragment,
+			vertexShader: shader$3.vertex,
 
 		});
 
@@ -160,7 +160,7 @@
 	ToneMappingMaterial.prototype = Object.create(THREE.ShaderMaterial.prototype);
 	ToneMappingMaterial.prototype.constructor = ToneMappingMaterial;
 
-	var shader$4 = {
+	var shader$5 = {
 		fragment: "uniform sampler2D tDiffuse;\nuniform vec2 center;\nuniform vec2 tSize;\nuniform float angle;\nuniform float scale;\n\nvarying vec2 vUv;\n\nfloat pattern() {\n\n\tfloat s = sin(angle);\n\tfloat c = cos(angle);\n\n\tvec2 tex = vUv * tSize - center;\n\tvec2 point = vec2(c * tex.x - s * tex.y, s * tex.x + c * tex.y) * scale;\n\n\treturn (sin(point.x) * sin(point.y)) * 4.0;\n\n}\n\nvoid main() {\n\n\tvec4 color = texture2D(tDiffuse, vUv);\n\tfloat average = (color.r + color.g + color.b) / 3.0;\n\n\tgl_FragColor = vec4(vec3(average * 10.0 - 5.0 + pattern()), color.a);\n\n}\n",
 		vertex: "varying vec2 vUv;\n\nvoid main() {\n\n\tvUv = uv;\n\tgl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n\n}\n",
 	};
@@ -187,8 +187,8 @@
 
 			},
 
-			fragmentShader: shader$4.fragment,
-			vertexShader: shader$4.vertex,
+			fragmentShader: shader$5.fragment,
+			vertexShader: shader$5.vertex,
 
 		});
 
@@ -197,7 +197,7 @@
 	DotScreenMaterial.prototype = Object.create(THREE.ShaderMaterial.prototype);
 	DotScreenMaterial.prototype.constructor = DotScreenMaterial;
 
-	var shader$2 = {
+	var shader$4 = {
 		fragment: "uniform sampler2D tDiffuse;\nuniform sampler2D tDisp;\nuniform int byp;\nuniform float amount;\nuniform float angle;\nuniform float seed;\nuniform float seedX;\nuniform float seedY;\nuniform float distortionX;\nuniform float distortionY;\nuniform float colS;\n\nvarying vec2 vUv;\n\nfloat rand(vec2 co) {\n\n\treturn fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453);\n\n}\n\nvoid main() {\n\n\tvec2 coord = vUv;\n\n\tfloat xs, ys;\n\tvec4 normal;\n\n\tvec2 offset;\n\tvec4 cr, cga, cb;\n\tvec4 snow, color;\n\n\tif(byp < 1) {\n\n\t\txs = floor(gl_FragCoord.x / 0.5);\n\t\tys = floor(gl_FragCoord.y / 0.5);\n\n\t\tnormal = texture2D(tDisp, coord * seed * seed);\n\n\t\tif(coord.y < distortionX + colS && coord.y > distortionX - colS * seed) {\n\n\t\t\tif(seedX > 0.0){\n\n\t\t\t\tcoord.y = 1.0 - (coord.y + distortionY);\n\n\t\t\t} else {\n\n\t\t\t\tcoord.y = distortionY;\n\n\t\t\t}\n\n\t\t}\n\n\t\tif(coord.x < distortionY + colS && coord.x > distortionY - colS * seed) {\n\n\t\t\tif(seedY > 0.0){\n\n\t\t\t\tcoord.x = distortionX;\n\n\t\t\t} else {\n\n\t\t\t\tcoord.x = 1. - (coord.x + distortionX);\n\n\t\t\t}\n\n\t\t}\n\n\t\tcoord.x += normal.x * seedX * (seed / 5.0);\n\t\tcoord.y += normal.y * seedY * (seed / 5.0);\n\n\t\t// Adopted from RGB shift shader.\n\t\toffset = amount * vec2(cos(angle), sin(angle));\n\t\tcr = texture2D(tDiffuse, coord + offset);\n\t\tcga = texture2D(tDiffuse, coord);\n\t\tcb = texture2D(tDiffuse, coord - offset);\n\t\tcolor = vec4(cr.r, cga.g, cb.b, cga.a);\n\t\tsnow = 200.0 * amount * vec4(rand(vec2(xs * seed,ys * seed * 50.0)) * 0.2);\n\t\tcolor += snow;\n\n\t} else {\n\n\t\tcolor = texture2D(tDiffuse, vUv);\n\n\t}\n\n\tgl_FragColor = color;\n\n}\n",
 		vertex: "varying vec2 vUv;\n\nvoid main() {\n\n\tvUv = uv;\n\tgl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n\n}\n",
 	};
@@ -231,8 +231,8 @@
 
 			},
 
-			fragmentShader: shader$2.fragment,
-			vertexShader: shader$2.vertex,
+			fragmentShader: shader$4.fragment,
+			vertexShader: shader$4.vertex,
 
 		});
 
@@ -274,8 +274,8 @@
 
 			defines: {
 
-				KERNEL_SIZE_FLOAT: 25.0,
-				KERNEL_SIZE_INT: 25
+				KERNEL_SIZE_FLOAT: "25.0",
+				KERNEL_SIZE_INT: "25"
 
 			},
 
@@ -349,8 +349,8 @@
 
 			defines: {
 
-				RINGS: 3,
-				SAMPLES: 4
+				RINGS: "3",
+				SAMPLES: "4"
 
 			},
 
@@ -403,7 +403,7 @@
 	BokehMaterial.prototype = Object.create(THREE.ShaderMaterial.prototype);
 	BokehMaterial.prototype.constructor = BokehMaterial;
 
-	var shader$7 = {
+	var shader$9 = {
 		fragment: "uniform sampler2D tDiffuse;\nuniform float time;\nuniform bool grayscale;\nuniform float nIntensity;\nuniform float sIntensity;\nuniform float sCount;\n\nvarying vec2 vUv;\n\nvoid main() {\n\n\tvec4 cTextureScreen = texture2D(tDiffuse, vUv);\n\n\t// Noise.\n\n\tfloat x = vUv.x * vUv.y * time * 1000.0;\n\tx = mod(x, 13.0) * mod(x, 123.0);\n\tfloat dx = mod(x, 0.01);\n\n\tvec3 cResult = cTextureScreen.rgb + cTextureScreen.rgb * clamp(0.1 + dx * 100.0, 0.0, 1.0);\n\n\tvec2 sc = vec2(sin(vUv.y * sCount), cos(vUv.y * sCount));\n\n\t// Scanlines.\n\n\tcResult += cTextureScreen.rgb * vec3(sc.x, sc.y, sc.x) * sIntensity;\n\n\tcResult = cTextureScreen.rgb + clamp(nIntensity, 0.0, 1.0) * (cResult - cTextureScreen.rgb);\n\n\tif(grayscale) {\n\n\t\tcResult = vec3(cResult.r * 0.3 + cResult.g * 0.59 + cResult.b * 0.11);\n\n\t}\n\n\tgl_FragColor =  vec4(cResult, cTextureScreen.a);\n\n}\n",
 		vertex: "varying vec2 vUv;\n\nvoid main() {\n\n\tvUv = uv;\n\tgl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n\n}\n",
 	};
@@ -447,8 +447,8 @@
 
 			},
 
-			fragmentShader: shader$7.fragment,
-			vertexShader: shader$7.vertex,
+			fragmentShader: shader$9.fragment,
+			vertexShader: shader$9.vertex,
 
 		});
 
@@ -457,9 +457,9 @@
 	FilmMaterial.prototype = Object.create(THREE.ShaderMaterial.prototype);
 	FilmMaterial.prototype.constructor = FilmMaterial;
 
-	var shader$9 = {
+	var shader$7 = {
 		fragment: {
-			generate: "uniform sampler2D tDiffuse;\nuniform float stepSize;\nuniform float decay;\nuniform float weight;\nuniform float exposure;\nuniform vec3 lightPosition;\n\nvarying vec2 vUv;\n\nvoid main() {\n\n\tvec2 texCoord = vUv;\n\tfloat numSamples = float(NUM_SAMPLES);\n\n\t// Calculate vector from pixel to light source in screen space.\n\tvec2 deltaTexCoord = texCoord - lightPosition.st;\n\tfloat distance = length(deltaTexCoord);\n\n\t// Step vector (uv space).\n\tvec2 step = stepSize * deltaTexCoord / distance;\n\n\t// Number of iterations between pixel and sun.\n\tint iterations = int(distance / stepSize);\n\n\t// Set up illumination decay factor.\n\tfloat illuminationDecay = 1.0;\n\n\t// Sample color.\n\tvec4 sample;\n\n\t// Color accumulator.\n\tvec4 color = vec4(0.0);\n\n\t// Estimate the probability of occlusion at each pixel by summing samples along a ray to the light source.\n\tfor(int i = 0; i < NUM_SAMPLES; ++i) {\n\n\t\t// Don't do more than necessary.\n\t\tif(i <= iterations && texCoord.y < 1.0) {\n\n\t\t\tsample = texture2D(tDiffuse, texCoord);\n\n\t\t\t// Apply sample attenuation scale/decay factors.\n\t\t\tsample *= illuminationDecay * weight;\n\n\t\t\tcolor += sample;\n\n\t\t\t// Update exponential decay factor.\n\t\t\tilluminationDecay *= decay;\n\n\t\t}\n\n\t\ttexCoord -= step;\n\n\t}\n\n\t// Output final color with a further scale control factor.\n\tgl_FragColor = (color / numSamples) * exposure;\n\n}\n",
+			generate: "uniform sampler2D tDiffuse;\nuniform float stepSize;\nuniform float decay;\nuniform float weight;\nuniform float exposure;\nuniform vec3 lightPosition;\n\nvarying vec2 vUv;\n\nvoid main() {\n\n\tvec2 texCoord = vUv;\n\n\t// Calculate vector from pixel to light source in screen space.\n\tvec2 deltaTexCoord = texCoord - lightPosition.st;\n\tfloat distance = length(deltaTexCoord);\n\n\t// Step vector (uv space).\n\tvec2 step = stepSize * deltaTexCoord / distance;\n\n\t// Number of iterations between pixel and sun.\n\tint iterations = int(distance / stepSize);\n\n\t// Set up illumination decay factor.\n\tfloat illuminationDecay = 1.0;\n\n\t// Sample color.\n\tvec4 sample;\n\n\t// Color accumulator.\n\tvec4 color = vec4(0.0);\n\n\t// Estimate the probability of occlusion at each pixel by summing samples along a ray to the light source.\n\tfor(int i = 0; i < NUM_SAMPLES_INT; ++i) {\n\n\t\t// Don't do more than necessary.\n\t\tif(i <= iterations && texCoord.y < 1.0) {\n\n\t\t\tsample = texture2D(tDiffuse, texCoord);\n\n\t\t\t// Apply sample attenuation scale/decay factors.\n\t\t\tsample *= illuminationDecay * weight;\n\n\t\t\tcolor += sample;\n\n\t\t\t// Update exponential decay factor.\n\t\t\tilluminationDecay *= decay;\n\n\t\t}\n\n\t\ttexCoord -= step;\n\n\t}\n\n\t// Output final color with a further scale control factor.\n\tgl_FragColor = (color / NUM_SAMPLES_FLOAT) * exposure;\n\n}\n",
 			combine: "uniform sampler2D tDiffuse;\nuniform sampler2D tGodRays;\nuniform float intensity;\n\nvarying vec2 vUv;\n\nvoid main() {\n\n\tgl_FragColor = texture2D(tDiffuse, vUv) + intensity * texture2D(tGodRays, vUv);\n\n}\n"
 		},
 		vertex: "varying vec2 vUv;\n\nvoid main() {\n\n\tvUv = uv;\n\tgl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n\n}\n"
@@ -469,14 +469,11 @@
 	 * Phase enumeration.
 	 *
 	 * Generate-phase:
-	 *
-	 *  The input is the depth map which is blurred along radial lines towards the "sun". 
-	 *  The output is written to a render texture.
+	 *  In the first pass, the masked scene is blurred along radial lines towards the light source.
+	 *  The result of the previous pass is re-blurred twice with a decreased distance between the samples.
 	 *
 	 * Combine-phase:
-	 *
-	 *  The results of the previous pass are re-blurred two times with a decreased 
-	 *  distance between samples.
+	 *  The result is added to the normal scene.
 	 *
 	 * @property Phase
 	 * @type Object
@@ -514,7 +511,8 @@
 
 			defines: {
 
-				NUM_SAMPLES: 6
+				NUM_SAMPLES_FLOAT: "6.0",
+				NUM_SAMPLES_INT: "6"
 
 			},
 
@@ -535,8 +533,8 @@
 
 			},
 
-			fragmentShader: (phase === Phase.COMBINE) ? shader$9.fragment.combine : shader$9.fragment.generate,
-			vertexShader: shader$9.vertex
+			fragmentShader: (phase === Phase.COMBINE) ? shader$7.fragment.combine : shader$7.fragment.generate,
+			vertexShader: shader$7.vertex
 
 		});
 
@@ -944,6 +942,7 @@
 	 *
 	 * @class RenderPass
 	 * @constructor
+	 * @extends Pass
 	 * @param {Scene} scene - The scene to render.
 	 * @param {Camera} camera - The camera to use to render the scene.
 	 * @param {Material} overrideMaterial - An override material for the scene.
@@ -1465,7 +1464,7 @@
 	/**
 	 * A render pass.
 	 *
-	 * @class RenderPass
+	 * @class DotScreenPass
 	 * @constructor
 	 * @extends Pass
 	 * @param {Object} [options] - The options.
@@ -1561,6 +1560,7 @@
 	 *
 	 * @class GlitchPass
 	 * @constructor
+	 * @extends Pass
 	 * @param {Number} [dtSize=64] - The size of the generated displacement map.
 	 */
 
@@ -1789,7 +1789,7 @@
 		 * @private
 		 */
 
-		this.blurY = new THREE.Vector2();
+		this.blurY = new THREE.Vector2(0.0, BLUR);
 
 		/**
 		 * A render target.
@@ -1915,15 +1915,24 @@
 
 	BloomPass.prototype.setSize = function(width, height) {
 
+		// Scale the factor with the render target ratio.
+		this.blurY.set(0.0, (width / height) * BLUR);
+
+		//width = height = 512;
+
 		this.renderTargetX.setSize(Math.floor(width * this.resolutionScale), Math.floor(height * this.resolutionScale));
 
 		if(this.renderTargetX.width <= 0) { this.renderTargetX.width = 1; }
 		if(this.renderTargetX.height <= 0) { this.renderTargetX.height = 1; }
 
-		this.renderTargetY.setSize(this.renderTargetX.width, this.renderTargetX.height);
+		if(!THREE.Math.isPowerOfTwo(this.renderTargetX.width) || !THREE.Math.isPowerOfTwo(this.renderTargetX.height)) {
 
-		// Scale the factor with the render target ratio.
-		this.blurY.set(0.0, (width / height) * BLUR);
+			this.renderTargetX.texture.generateMipmaps = false;
+			this.renderTargetY.texture.generateMipmaps = false;
+
+		}
+
+		this.renderTargetY.setSize(this.renderTargetX.width, this.renderTargetX.height);
 
 	};
 
@@ -2180,6 +2189,7 @@
 	 *
 	 * @class GodRaysPass
 	 * @constructor
+	 * @extends Pass
 	 * @param {Scene} scene - The main scene.
 	 * @param {Camera} camera - The main camera.
 	 * @param {Vector3} lightSource - The most important light source.
@@ -2264,7 +2274,13 @@
 		this.godRaysGenerateMaterial = new GodRaysMaterial(Phase.GENERATE);
 		this.godRaysGenerateMaterial.uniforms.lightPosition.value = this.screenLightPos;
 
-		if(options.samples !== undefined) { this.godRaysGenerateMaterial.defines.NUM_SAMPLES = options.samples; }
+		if(options.samples !== undefined) {
+
+			this.godRaysGenerateMaterial.defines.NUM_SAMPLES_FLOAT = options.samples.toFixed(1);
+			this.godRaysGenerateMaterial.defines.NUM_SAMPLES_INT = options.samples.toFixed(0);
+
+		}
+
 		if(options.decay !== undefined) { this.godRaysGenerateMaterial.uniforms.decay.value = options.decay; }
 		if(options.weight !== undefined) { this.godRaysGenerateMaterial.uniforms.weight.value = options.weight; }
 
@@ -2311,7 +2327,7 @@
 		 */
 
 		var rayLength = (options.rayLength !== undefined) ? THREE.Math.clamp(options.rayLength, 0.0, 1.0) : 1.0;
-		var NUM_SAMPLES = this.godRaysGenerateMaterial.defines.NUM_SAMPLES;
+		var NUM_SAMPLES = Number.parseInt(this.godRaysGenerateMaterial.defines.NUM_SAMPLES_INT);
 
 		this.stepSizes = new Float32Array(3);
 		this.stepSizes[0] = rayLength * Math.pow(NUM_SAMPLES, -1.0);
@@ -2380,8 +2396,8 @@
 
 		// Compute the screen light position and translate the coordinates to [-1, 1].
 		this.screenLightPos.copy(this.lightSource.position).project(this.camera);
-		this.screenLightPos.x = THREE.Math.clamp((this.screenLightPos.x + 1.0) * 0.5, 0.0, 1.0);
-		this.screenLightPos.y = THREE.Math.clamp((this.screenLightPos.y + 1.0) * 0.55, 0.0, 1.0);
+		this.screenLightPos.x = THREE.Math.clamp((this.screenLightPos.x + 1.0) * 0.5, -1.0, 1.0);
+		this.screenLightPos.y = THREE.Math.clamp((this.screenLightPos.y + 1.0) * 0.5, -1.0, 1.0);
 
 		// Don't show the rays from weird angles.
 		this.godRaysGenerateMaterial.uniforms.exposure.value = this.computeAngleScalar() * this.exposure;
@@ -2433,7 +2449,7 @@
 	 *
 	 * @method computeAngleScalar
 	 * @private
-	 * @return {Number} A scalar in the range 0.0 to 1.0.
+	 * @return {Number} A scalar in the range 0.0 to 1.0 for a linear transition.
 	 */
 
 	// Computation helpers.
@@ -2443,6 +2459,8 @@
 	var lightDirection = new THREE.Vector3();
 
 	GodRaysPass.prototype.computeAngleScalar = function() {
+
+		//this.camera.getWorldDirection(cameraDirection);
 
 		// Save camera space point. Using lightDirection as a clipboard.
 		lightDirection.copy(localPoint);
@@ -2477,6 +2495,13 @@
 
 		if(this.renderTargetX.width <= 0) { this.renderTargetX.width = 1; }
 		if(this.renderTargetX.height <= 0) { this.renderTargetX.height = 1; }
+
+		if(!THREE.Math.isPowerOfTwo(this.renderTargetX.width) || !THREE.Math.isPowerOfTwo(this.renderTargetX.height)) {
+
+			this.renderTargetX.texture.generateMipmaps = false;
+			this.renderTargetY.texture.generateMipmaps = false;
+
+		}
 
 		this.renderTargetY.setSize(this.renderTargetX.width, this.renderTargetX.height);
 
