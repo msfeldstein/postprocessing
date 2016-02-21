@@ -62,7 +62,7 @@ window.addEventListener("load", function init() {
 
 	var i, mesh;
 	var geometry = new THREE.SphereBufferGeometry(1, 4, 4);
-	var material = new THREE.MeshPhongMaterial({color: 0x00f000, shading: THREE.FlatShading});
+	var material = new THREE.MeshPhongMaterial({color: 0xffffff, shading: THREE.FlatShading});
 
 	for(i = 0; i < 100; ++i) {
 
@@ -82,7 +82,7 @@ window.addEventListener("load", function init() {
 	// Cage.
 
 	var geometry = new THREE.BoxGeometry(25, 825, 25);
-	var material = new THREE.MeshLambertMaterial({color: 0x080808});
+	var material = new THREE.MeshLambertMaterial({color: 0x0b0b0b});
 	var mesh = new THREE.Mesh(geometry, material);
 
 	var o = new THREE.Object3D();
@@ -121,7 +121,8 @@ window.addEventListener("load", function init() {
 
 	var pass = new POSTPROCESSING.BloomPass({
 		resolution: 512,
-		strength: 1.0
+		blurriness: 1.0,
+		strength: 1.6
 	});
 
 	pass.renderToScreen = true;
@@ -130,16 +131,27 @@ window.addEventListener("load", function init() {
 	// Shader settings.
 
 	var params = {
-		//"resolution": Math.round(Math.log(pass.resolution) / Math.log(2)),
 		"resolution": pass.resolutionScale,
-		"strength": pass.copyMaterial.uniforms.opacity.value,
-		"blurriness": pass.blurriness
+		"blurriness": pass.blurriness,
+		"strength": pass.combineMaterial.uniforms.opacity2.value,
+		"average lum": pass.toneMappingMaterial.uniforms.averageLuminance.value,
+		"max luminance": pass.toneMappingMaterial.uniforms.maxLuminance.value,
+		"middle grey": pass.toneMappingMaterial.uniforms.middleGrey.value,
+		"blend": true
 	};
 
-	//gui.add(params, "resolution").min(6).max(11).step(1).onChange(function() { pass.resolution = Math.pow(2, params["resolution"]); });
 	gui.add(params, "resolution").min(0.0).max(1.0).step(0.01).onChange(function() { pass.resolutionScale = params["resolution"]; composer.reset(); });
 	gui.add(params, "blurriness").min(0.0).max(3.0).step(0.1).onChange(function() { pass.blurriness = params["blurriness"]; });
-	gui.add(params, "strength").min(0.0).max(3.0).step(0.01).onChange(function() { pass.copyMaterial.uniforms.opacity.value = pass.combineMaterial.uniforms.opacity2.value = params["strength"]; });
+	gui.add(params, "strength").min(0.0).max(3.0).step(0.01).onChange(function() { pass.combineMaterial.uniforms.opacity2.value = params["strength"]; });
+	gui.add(params, "average lum").min(0.01).max(1.0).step(0.01).onChange(function() { pass.toneMappingMaterial.uniforms.averageLuminance.value = params["average lum"]; });
+	gui.add(params, "max luminance").min(0.0).max(16.0).step(0.1).onChange(function() { pass.toneMappingMaterial.uniforms.maxLuminance.value = params["max luminance"]; });
+	gui.add(params, "middle grey").min(0.0).max(1.0).step(0.01).onChange(function() { pass.toneMappingMaterial.uniforms.middleGrey.value = params["middle grey"]; });
+
+	gui.add(params, "blend").onChange(function() {
+
+		pass.combineMaterial.uniforms.opacity1.value = params["blend"] ? 1.0 : 0.0;
+
+	});
 
 	/**
 	 * Handles resizing.
