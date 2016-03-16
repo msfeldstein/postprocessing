@@ -1,6 +1,47 @@
-window.addEventListener("load", function init() {
+window.addEventListener("load", function loadAssets() {
 
-	window.removeEventListener("load", init);
+	window.removeEventListener("load", loadAssets);
+
+	var loadingManager = new THREE.LoadingManager();
+	var cubeTextureLoader = new THREE.CubeTextureLoader(loadingManager);
+
+	var assets = {};
+
+	loadingManager.onProgress = function(item, loaded, total) {
+
+		if(loaded === total) { setupScene(assets); }
+
+	};
+
+	var path = "textures/skies/space3/";
+	var format = ".jpg";
+	var urls = [
+		path + "px" + format, path + "nx" + format,
+		path + "py" + format, path + "ny" + format,
+		path + "pz" + format, path + "nz" + format
+	];
+
+	cubeTextureLoader.load(urls, function(textureCube) {
+
+		var shader = THREE.ShaderLib.cube;
+		shader.uniforms.tCube.value = textureCube;
+
+		var skyBoxMaterial = new THREE.ShaderMaterial( {
+			fragmentShader: shader.fragmentShader,
+			vertexShader: shader.vertexShader,
+			uniforms: shader.uniforms,
+			depthWrite: false,
+			side: THREE.BackSide,
+			fog: false
+		});
+
+		assets.sky = new THREE.Mesh(new THREE.BoxGeometry(2000, 2000, 2000), skyBoxMaterial);
+
+	});
+
+});
+
+function setupScene(assets) {
 
 	// Renderer and Scene.
 
@@ -56,6 +97,10 @@ window.addEventListener("load", function init() {
 	scene.add(directionalLight);
 	scene.add(hemisphereLight);
 
+	// Sky.
+
+	camera.add(assets.sky);
+
 	// Random objects.
 
 	object = new THREE.Object3D();
@@ -85,9 +130,9 @@ window.addEventListener("load", function init() {
 	composer.addPass(new POSTPROCESSING.RenderPass(scene, camera));
 
 	var pass = new POSTPROCESSING.DotScreenPass({
-		scale: 0.5,
+		scale: 0.8,
 		angle: Math.PI * 0.5,
-		patternSize: 1.0
+		intensity: 0.25
 	});
 
 	pass.renderToScreen = true;
@@ -96,19 +141,27 @@ window.addEventListener("load", function init() {
 	// Shader settings.
 
 	var params = {
+		"average": pass.material.defines.AVERAGE !== undefined,
 		"scale": pass.material.uniforms.scale.value,
 		"angle": pass.material.uniforms.angle.value,
+		"intensity": pass.material.uniforms.intensity.value,
 		"center X": pass.material.uniforms.offsetRepeat.value.x,
 		"center Y": pass.material.uniforms.offsetRepeat.value.y
 	};
 
+	gui.add(params, "average").onChange(function() {
+		if(params["average"]) { pass.material.defines.AVERAGE = "1"; }
+		else { delete pass.material.defines.AVERAGE; }
+		pass.material.needsUpdate = true;
+	});
+
 	gui.add(params, "scale").min(0.0).max(1.0).step(0.01).onChange(function() { pass.material.uniforms.scale.value = params["scale"]; });
 	gui.add(params, "angle").min(0.0).max(Math.PI).step(0.001).onChange(function() { pass.material.uniforms.angle.value = params["angle"]; });
+	gui.add(params, "intensity").min(0.0).max(1.0).step(0.01).onChange(function() { pass.material.uniforms.intensity.value = params["intensity"]; });
 
 	var f = gui.addFolder("Center");
 	f.add(params, "center X").min(-1.0).max(1.0).step(0.01).onChange(function() { pass.material.uniforms.offsetRepeat.value.x = params["center X"]; });
 	f.add(params, "center Y").min(-1.0).max(1.0).step(0.01).onChange(function() { pass.material.uniforms.offsetRepeat.value.y = params["center Y"]; });
-	f.open();
 
 	/**
 	 * Handles resizing.
@@ -150,4 +203,4 @@ window.addEventListener("load", function init() {
 
 	}());
 
-});
+}

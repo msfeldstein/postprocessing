@@ -7,7 +7,7 @@
 export { EffectComposer } from "./effect-composer";
 
 export {
-	AdaptiveToneMappingPass,
+	ToneMappingPass,
 	BloomPass,
 	BokehPass,
 	ClearMaskPass,
@@ -19,6 +19,7 @@ export {
 	Pass,
 	RenderPass,
 	SavePass,
+	SMAAPass,
 	ShaderPass
 } from "./passes";
 
@@ -33,5 +34,8 @@ export {
 	GlitchMaterial,
 	GodRaysMaterial,
 	LuminosityMaterial,
+	SMAABlendMaterial,
+	SMAAColorEdgesMaterial,
+	SMAAWeightsMaterial,
 	ToneMappingMaterial
 } from "./materials";

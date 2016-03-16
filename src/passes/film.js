@@ -9,103 +9,111 @@ import THREE from "three";
  * @constructor
  * @extends Pass
  * @param {Object} [options] - The options.
- * @param {Boolean} [options.grayscale=true] - Convert to greyscale.
+ * @param {Boolean} [options.greyscale=false] - Enable greyscale effect. Greyscale and sepia are mutually exclusive.
+ * @param {Boolean} [options.sepia=false] - Enable sepia effect. Greyscale and sepia are mutually exclusive.
+ * @param {Boolean} [options.vignette=false] - Apply vignette effect.
+ * @param {Boolean} [options.eskil=false] - Use Eskil's vignette approach. The default looks dusty while Eskil looks more burned out.
+ * @param {Boolean} [options.scanlines=true] - Show scanlines.
+ * @param {Boolean} [options.noise=true] - Show noise-based film grain.
  * @param {Number} [options.noiseIntensity=0.5] - The noise intensity. 0.0 to 1.0.
- * @param {Number} [options.scanlinesIntensity=0.05] - The scanline intensity. 0.0 to 1.0.
- * @param {Number} [options.scanlines=1.0] - The number of scanlines in percent, relative to the screen height.
+ * @param {Number} [options.scanlineIntensity=0.05] - The scanline intensity. 0.0 to 1.0.
+ * @param {Number} [options.scanlineDensity=1.0] - The number of scanlines in percent, relative to the screen height.
+ * @param {Number} [options.greyscaleIntensity=1.0] - The intensity of the greyscale effect.
+ * @param {Number} [options.sepiaIntensity=1.0] - The intensity of the sepia effect.
+ * @param {Number} [options.vignetteOffset=1.0] - The offset of the vignette effect.
+ * @param {Number} [options.vignetteDarkness=1.0] - The darkness of the vignette effect.
  */
 
-export function FilmPass(options) {
+export class FilmPass extends Pass {
 
-	Pass.call(this);
+	constructor(options) {
 
-	this.needsSwap = true;
+		super();
 
-	if(options === undefined) { options = {}; }
+		this.needsSwap = true;
 
-	/**
-	 * Film shader material.
-	 *
-	 * @property material
-	 * @type FilmMaterial
-	 * @private
-	 */
+		if(options === undefined) { options = {}; }
 
-	this.material = new FilmMaterial();
+		/**
+		 * Film shader material.
+		 *
+		 * @property material
+		 * @type FilmMaterial
+		 * @private
+		 */
 
-	if(options.grayscale !== undefined) { this.material.uniforms.grayscale.value = options.grayscale; }
-	if(options.noiseIntensity !== undefined) { this.material.uniforms.nIntensity.value = options.noiseIntensity; }
-	if(options.scanlinesIntensity !== undefined) { this.material.uniforms.sIntensity.value = options.scanlinesIntensity; }
+		this.material = new FilmMaterial(options);
 
-	this.quad.material = this.material;
+		this.quad.material = this.material;
 
-	/**
-	 * The amount of scanlines in percent, relative to the screen height.
-	 *
-	 * You need to call the reset method of the EffectComposer after 
-	 * changing this value.
-	 *
-	 * @property scanlines
-	 * @type Number
-	 */
+		/**
+		 * The amount of scanlines in percent, relative to the screen height.
+		 *
+		 * You need to call the setSize method of the EffectComposer after 
+		 * changing this value.
+		 *
+		 * @property scanlineDensity
+		 * @type Number
+		 * @default 1.25
+		 */
 
-	this.scanlines = (options.scanlines === undefined) ? 1.0 : options.scanlines;
-
-}
-
-FilmPass.prototype = Object.create(Pass.prototype);
-FilmPass.prototype.constructor = FilmPass;
-
-/**
- * Renders the effect.
- *
- * @method render
- * @param {WebGLRenderer} renderer - The renderer to use.
- * @param {WebGLRenderTarget} buffer - The read/write buffer.
- * @param {Number} delta - The render delta time.
- */
-
-FilmPass.prototype.render = function(renderer, readBuffer, writeBuffer, delta) {
-
-	this.material.uniforms.tDiffuse.value = readBuffer;
-	this.material.uniforms.time.value += delta;
-
-	if(this.renderToScreen) {
-
-		renderer.render(this.scene, this.camera);
-
-	} else {
-
-		renderer.render(this.scene, this.camera, writeBuffer, false);
+		this.scanlineDensity = (options.scanlineDensity === undefined) ? 1.25 : options.scanlineDensity;
 
 	}
 
-};
+	/**
+	 * Renders the effect.
+	 *
+	 * @method render
+	 * @param {WebGLRenderer} renderer - The renderer to use.
+	 * @param {WebGLRenderTarget} readBuffer - The read buffer.
+	 * @param {WebGLRenderTarget} writeBuffer - The write buffer.
+	 * @param {Number} delta - The render delta time.
+	 */
 
-/**
- * Adjusts the scanlines to the render height.
- *
- * @method initialise
- * @param {WebGLRenderer} renderer - The renderer.
- */
+	render(renderer, readBuffer, writeBuffer, delta) {
 
-FilmPass.prototype.initialise = function(renderer) {
+		this.material.uniforms.tDiffuse.value = readBuffer;
+		this.material.uniforms.time.value += delta;
 
-	let size = renderer.getSize();
-	this.setSize(size.width, size.height);
+		if(this.renderToScreen) {
 
-};
+			renderer.render(this.scene, this.camera);
 
-/**
- * Updates this pass with the renderer's size.
- *
- * @method setSize
- * @param {Number} width - The width.
- * @param {Number} height - The height.
- */
+		} else {
 
-FilmPass.prototype.setSize = function(width, height) {
+			renderer.render(this.scene, this.camera, writeBuffer, false);
 
-	this.material.uniforms.sCount.value = Math.round(height * this.scanlines);
+		}
 
-};
+	}
+
+	/**
+	 * Adjusts the scanline count using the renderer's height.
+	 *
+	 * @method initialise
+	 * @param {WebGLRenderer} renderer - The renderer.
+	 */
+
+	initialise(renderer) {
+
+		let size = renderer.getSize();
+		this.setSize(size.width, size.height);
+
+	}
+
+	/**
+	 * Adjusts the scanline count using the renderer's height.
+	 *
+	 * @method setSize
+	 * @param {Number} width - The width.
+	 * @param {Number} height - The height.
+	 */
+
+	setSize(width, height) {
+
+		this.material.uniforms.scanlineCount.value = Math.round(height * this.scanlineDensity);
+
+	}
+
+}
