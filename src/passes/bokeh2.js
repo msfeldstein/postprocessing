@@ -1,27 +1,33 @@
-import { BokehMaterial } from "../materials";
+import { Bokeh2Material } from "../materials";
 import { Pass } from "./pass";
 import THREE from "three";
 
 /**
- * Depth of Field pass using a bokeh shader.
+ * Depth of Field pass version 2.
  *
- * @class BokehPass
+ * This pass yields more realistic results but is also more demanding.
+ *
+ * @class Bokeh2Pass
  * @constructor
  * @extends Pass
  * @param {Texture} depthTexture - A render texture that contains the depth of the scene.
+ * @param {PerspectiveCamera} camera - The main camera. Used to adjust near and far plane and focal length settings.
  * @param {Object} [options] - Additional parameters.
- * @param {Number} [options.focus=1.0] - Focus distance.
- * @param {Number} [options.aperture=0.025] - Camera aperture scale. Bigger values for shallower depth of field.
- * @param {Number} [options.maxBlur=1.0] - Maximum blur strength.
+ * @param {Number} [options.rings=3] - The amount of blur rings.
+ * @param {Number} [options.samples=4] - The amount of samples per ring.
+ * @param {Boolean} [options.showFocus=false] - Whether the focus point should be highlighted.
+ * @param {Boolean} [options.manualDoF=false] - Enables manual depth of field blur.
+ * @param {Boolean} [options.vignette=false] - Enables a vignette effect.
+ * @param {Boolean} [options.pentagon=false] - Enable to use a pentagonal shape to scale gathered texels.
+ * @param {Boolean} [options.shaderFocus=true] - Disable if you compute your own focalDepth (in metres!).
+ * @param {Boolean} [options.noise=true] - Disable if you don't want noise patterns for dithering.
  */
 
-export class BokehPass extends Pass {
+export class Bokeh2Pass extends Pass {
 
-	constructor(depthTexture, options) {
+	constructor(depthTexture, camera, options) {
 
 		super();
-
-		this.needsSwap = true;
 
 		if(options === undefined) { options = {}; }
 
@@ -33,7 +39,7 @@ export class BokehPass extends Pass {
 		 * @private
 		 */
 
-		this.bokehMaterial = new BokehMaterial(options);
+		this.bokehMaterial = new Bokeh2Material(camera, options);
 
 		this.bokehMaterial.uniforms.tDepth.value = (depthTexture !== undefined) ? depthTexture : null;
 
@@ -91,7 +97,7 @@ export class BokehPass extends Pass {
 
 	setSize(width, height) {
 
-		this.bokehMaterial.uniforms.aspect.value = width / height;
+		this.bokehMaterial.setTexelSize(1.0 / width, 1.0 / height);
 
 	}
 
