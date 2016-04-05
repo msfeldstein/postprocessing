@@ -1,5 +1,7 @@
-import shader from "./inlined/shader";
 import THREE from "three";
+
+import fragment from "./glsl/shader.frag";
+import vertex from "./glsl/shader.vert";
 
 /**
  * Depth of Field shader (Bokeh).
@@ -21,7 +23,7 @@ export class BokehMaterial extends THREE.ShaderMaterial {
 
 	constructor(options) {
 
-		if(options === undefined) {	options = {}; }
+		if(options === undefined) { options = {}; }
 
 		super({
 
@@ -37,8 +39,8 @@ export class BokehMaterial extends THREE.ShaderMaterial {
 
 			},
 
-			fragmentShader: shader.fragment,
-			vertexShader: shader.vertex
+			fragmentShader: fragment,
+			vertexShader: vertex
 
 		});
 
