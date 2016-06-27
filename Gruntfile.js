@@ -20,24 +20,31 @@ module.exports = function(grunt) {
 
 		rollup: {
 			options: {
-				format: "umd",
-				moduleName: "<%= pkg.name.toUpperCase() %>",
-				banner: "<%= banner %>",
-				globals: {
-					three: "THREE"
-				},
+				globals: {three: "THREE"},
 				external: ["three"],
 				plugins: [
 					require("rollup-plugin-node-resolve")({
-						main: false,
 						jsnext: true
 					}),
 					require("rollup-plugin-string")({
-						extensions: [".frag", ".vert"]
+						include: [
+							"**/*.frag",
+							"**/*.vert"
+						]
+					}),
+					require("rollup-plugin-babel")({
+						exclude: [
+							"node_modules/**"
+						]
 					})
 				]
 			},
 			dist: {
+				options: {
+					format: "umd",
+					moduleName: "<%= pkg.name.toUpperCase() %>",
+					banner: "<%= banner %>"
+				},
 				src: "src/index.js",
 				dest: "build/<%= pkg.name %>.js"
 			}

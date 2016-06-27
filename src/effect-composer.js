@@ -19,8 +19,8 @@ import THREE from "three";
  * further processing.
  *
  * @class EffectComposer
- * @constructor
  * @module postprocessing
+ * @constructor
  * @param {WebGLRenderer} [renderer] - The renderer that should be used in the passes.
  * @param {Boolean} [depthTexture=false] - Set to true, if one of your passes relies on the depth of the main scene.
  * @param {Boolean} [stencilBuffer=false] - Whether the main render targets should have a stencil buffer.
@@ -170,7 +170,8 @@ export class EffectComposer {
 		let writeBuffer = this.writeBuffer;
 
 		let maskActive = false;
-		let i, l, pass, buffer, ctx;
+		let i, l, pass, buffer;
+		let ctx, state;
 
 		for(i = 0, l = this.passes.length; i < l; ++i) {
 
@@ -185,9 +186,10 @@ export class EffectComposer {
 					if(maskActive) {
 
 						ctx = this.renderer.context;
-						ctx.stencilFunc(ctx.NOTEQUAL, 1, 0xffffffff);
+						state = this.renderer.state;
+						state.setStencilFunc(ctx.NOTEQUAL, 1, 0xffffffff);
 						this.copyPass.render(this.renderer, readBuffer, writeBuffer);
-						ctx.stencilFunc(ctx.EQUAL, 1, 0xffffffff);
+						state.setStencilFunc(ctx.EQUAL, 1, 0xffffffff);
 
 					}
 
