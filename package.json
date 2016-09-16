@@ -1,6 +1,6 @@
 {
 	"name": "postprocessing",
-	"version": "1.1.4",
+	"version": "1.1.5",
 	"description": "A post processing library that provides the means to implement 2D filter effects for three.js.",
 	"homepage": "https://github.com/vanruesc/postprocessing",
 	"main": "build/postprocessing.js",
@@ -44,7 +44,7 @@
 	},
 
 	"dependencies": {
-		"three": "0.80.x"
+		"three": "0.81.x"
 	},
 
 	"devDependencies": {
@@ -56,7 +56,7 @@
 		"grunt-contrib-copy": "1.0.x",
 		"grunt-eslint": "19.0.x",
 		"grunt-lemon": "0.1.x",
-		"grunt-rollup": "0.7.x",
+		"grunt-rollup": "0.8.x",
 		"babel-preset-es2015-rollup": "1.2.x",
 		"rollup-plugin-node-resolve": "2.0.x",
 		"rollup-plugin-babel": "2.6.x",

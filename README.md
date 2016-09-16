@@ -6,6 +6,8 @@
 
 A post processing library that provides the means to implement 2D filter effects for three.js.
 
+*[API Reference](http://vanruesc.github.io/postprocessing/docs)*
+
 
 ## Installation
 
@@ -93,11 +95,6 @@ Writing self-contained render-to-texture passes is also a feasible option.
  - [Film](http://vanruesc.github.io/postprocessing/public/film.html)
 
 
-## Documentation
-
-[API](http://vanruesc.github.io/postprocessing/docs)
-
-
 ## Contributing
 
 Maintain the existing coding style. Add unit tests for any new or changed functionality. Lint and test your code.
@@ -105,10 +102,12 @@ Maintain the existing coding style. Add unit tests for any new or changed functi
 
 ## License
 
-This library is licensed under the [Zlib license](https://github.com/vanruesc/postprocessing/blob/master/LICENSE).  
+This library is licensed under the [Zlib license](https://github.com/vanruesc/postprocessing/blob/master/LICENSE).
+
 The original code that this library is based on, was written by [alteredq](http://alteredqualia.com),
 [miibond](https://github.com/MiiBond), [zz85](https://github.com/zz85),
 [felixturner](http://airtight.cc) and [huwb](http://huwbowles.com)
-and is licensed under the [MIT license](https://github.com/mrdoob/three.js/blob/master/LICENSE).  
+and is licensed under the [MIT license](https://github.com/mrdoob/three.js/blob/master/LICENSE).
+
 The film effect incorporates code written by Georg Steinrohder and Pat Shearon which was released under the
 [Creative Commons Attribution 3.0 License](http://creativecommons.org/licenses/by/3.0/).
